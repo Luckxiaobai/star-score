@@ -1,0 +1,986 @@
+/* ================================================================
+ * 星谱识音 · 全局样式
+ * ----------------------------------------------------------------
+ * 设计理念：编辑式乐谱美学
+ *   - 暖色调纸张感背景，模拟实体乐谱纸
+ *   - 深墨色主调（Ink Indigo）+ 金色点缀（Amber Gold）
+ *   - 层次分明的阴影系统，避免扁平化
+ *   - 克制的动效，只在关键时刻出现
+ *
+ * 目录（按区块搜索关键词可快速定位）：
+ *   1. 色彩与设计令牌      [TOKENS]
+ *   2. 全局重置与基础       [RESET]
+ *   3. App 骨架布局         [LAYOUT]
+ *   4. 顶部标题栏           [HEADER]
+ *   5. 工具栏               [TOOLBAR]
+ *   6. 按钮系统             [BUTTONS]
+ *   7. 输入控件             [INPUTS]
+ *   8. 编辑器主区域         [EDITOR]
+ *   9. 侧边栏               [SIDEBAR]
+ *  10. 底部状态栏          [STATUSBAR]
+ *  11. 软键盘              [KEYBOARD]
+ *  12. 模态框              [MODAL]
+ *  13. Toast 提示          [TOAST]
+ *  14. 动画关键帧          [KEYFRAMES]
+ *  15. 响应式              [RESPONSIVE]
+ *  16. 打印                [PRINT]
+ * ================================================================ */
+
+
+/* ================================================================
+ * 1. 色彩与设计令牌  [TOKENS]
+ * ----------------------------------------------------------------
+ * 全局色彩、阴影、圆角、间距等设计常量集中管理。
+ * 后续改色只需修改此处，全站自动生效。
+ * ================================================================ */
+:root {
+  /* --- 主色调：青绿实验室（与 HumanV 暗色主题统一） --- */
+  --color-primary: #14b8a6;          /* 主色：青绿，用于按钮/高亮 */
+  --color-primary-dark: #0d9488;      /* 深一档：hover/active */
+  --color-primary-light: rgba(45, 212, 191, 0.16);
+  --color-primary-tint: rgba(45, 212, 191, 0.08);
+
+  /* --- 点缀色：暖琥珀 --- */
+  --color-accent: #fbbf24;           /* 琥珀：音乐元素强调 */
+  --color-accent-light: rgba(251, 191, 36, 0.12);
+
+  /* --- 语义色 --- */
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+  --color-info: #2dd4bf;
+
+  /* --- 背景与表面（暗色仪器风） --- */
+  --color-bg: #0b1416;
+  --color-bg-alt: #0e1a1c;
+  --color-surface: #142024;
+  --color-surface-elevated: #1a2a2e;
+
+  /* --- 文字 --- */
+  --color-text: #d7e7e6;
+  --color-text-secondary: #7f9897;
+  --color-text-tertiary: #5a706f;
+  --color-text-inverse: #061311;
+
+  /* --- 边框 --- */
+  --color-border: rgba(130, 210, 200, 0.14);
+  --color-border-light: rgba(130, 210, 200, 0.08);
+  --color-border-strong: rgba(130, 210, 200, 0.28);
+
+  /* --- 阴影系统：暗色下用深阴影 --- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 14px 32px rgba(0, 0, 0, 0.45), 0 4px 10px rgba(0, 0, 0, 0.25);
+  --shadow-xl: 0 24px 56px rgba(0, 0, 0, 0.55), 0 8px 18px rgba(0, 0, 0, 0.3);
+
+  /* --- 圆角 --- */
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* --- 间距令牌 --- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+
+  /* --- 过渡 --- */
+  --transition-fast: 0.12s ease;
+  --transition: 0.2s ease;
+  --transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- 字体栈 --- */
+  --font-ui: 'Noto Sans CJK SC', 'WenQuanYi Micro Hei', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-music: 'Georgia', 'Noto Serif', 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+
+/* ================================================================
+ * 2. 全局重置与基础  [RESET]
+ * ================================================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-ui);
+  background: var(--color-bg);
+  color: var(--color-text);
+  overflow: hidden;
+  color-scheme: dark;
+  /* 暗色网格 + 微弱青绿光晕 */
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(45, 212, 191, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 85% 90%, rgba(20, 184, 166, 0.05) 0%, transparent 50%),
+    linear-gradient(rgba(130, 210, 200, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(130, 210, 200, 0.04) 1px, transparent 1px);
+  background-size: auto, auto, 32px 32px, 32px 32px;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong);
+}
+
+
+/* ================================================================
+ * 3. App 骨架布局  [LAYOUT]
+ * ================================================================ */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--color-bg);
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+
+/* ================================================================
+ * 4. 顶部标题栏  [HEADER]
+ * ----------------------------------------------------------------
+ * 品牌区域 + 全局操作按钮
+ * ================================================================ */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  min-height: 52px;
+  z-index: 10;
+}
+
+/* 品牌 Logo */
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+}
+
+.app-logo-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #eafffb;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font-music);
+  box-shadow: 0 6px 18px rgba(20, 184, 166, 0.3);
+}
+
+.app-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+/* ================================================================
+ * 5. 工具栏  [TOOLBAR]
+ * ----------------------------------------------------------------
+ * 编辑操作、调号拍号选择、导出等
+ * ================================================================ */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+  min-height: 48px;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px;
+  border-right: 1px solid var(--color-border-light);
+}
+
+.toolbar-group:last-child {
+  border-right: none;
+}
+
+
+/* ================================================================
+ * 6. 按钮系统  [BUTTONS]
+ * ----------------------------------------------------------------
+ * 基础按钮 + 变体（primary / danger / active / icon / sm）
+ * 统一交互反馈：hover 浮起、active 按下
+ * ================================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  font-family: inherit;
+  box-shadow: var(--shadow-xs);
+}
+
+.btn:hover {
+  background: var(--color-primary-tint);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+  transition: all 0.05s;
+}
+
+/* 主按钮：墨靛蓝底 */
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+/* 危险按钮 */
+.btn-danger {
+  color: var(--color-danger);
+  border-color: rgba(248, 113, 113, 0.35);
+  background: rgba(248, 113, 113, 0.08);
+}
+
+.btn-danger:hover {
+  background: rgba(248, 113, 113, 0.16);
+  border-color: var(--color-danger);
+}
+
+/* 图标按钮 */
+.btn-icon {
+  padding: 6px 9px;
+  min-width: 32px;
+}
+
+/* 小号按钮 */
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* 激活态 */
+.btn-active {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border-color: var(--color-primary);
+}
+
+
+/* ================================================================
+ * 7. 输入控件  [INPUTS]
+ * ================================================================ */
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.input-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+select,
+input[type="text"],
+input[type="number"] {
+  padding: 5px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--color-surface);
+  color: var(--color-text);
+  outline: none;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-xs);
+}
+
+select:hover,
+input[type="text"]:hover,
+input[type="number"]:hover {
+  border-color: var(--color-border-strong);
+}
+
+select:focus,
+input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15);
+}
+
+
+/* ================================================================
+ * 8. 编辑器主区域  [EDITOR]
+ * ----------------------------------------------------------------
+ * 编辑器工具条 + 谱面画布 + 软键盘
+ * ================================================================ */
+.editor-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 编辑器顶部信息条 */
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 20px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-light);
+  min-height: 40px;
+  flex-wrap: wrap;
+}
+
+/* 曲目信息文字 */
+.editor-track-info {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+/* 时值显示 */
+.editor-duration-info {
+  margin-left: auto;
+  display: flex;
+  gap: var(--space-xs);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+/* 谱面画布：纸张感背景 */
+.editor-canvas {
+  flex: 1;
+  overflow: auto;
+  background: var(--color-bg-alt);
+  padding: 24px 20px;
+  /* 纸张纹理叠加 */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 28px,
+      rgba(60, 50, 40, 0.015) 28px,
+      rgba(60, 50, 40, 0.015) 29px
+    );
+}
+
+
+/* ================================================================
+ * 9. 侧边栏  [SIDEBAR]
+ * ----------------------------------------------------------------
+ * 谱面信息、选中音符、歌词和弦编辑
+ * ================================================================ */
+.sidebar {
+  width: 280px;
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-section {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.sidebar-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* 侧边栏输入框（全宽） */
+.sidebar-input {
+  width: 100%;
+}
+
+/* 侧边栏表单分组 */
+.sidebar-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* 侧边栏表单堆叠 */
+.sidebar-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* 选中音符的大号显示 */
+.sidebar-note-display {
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  padding: var(--space-sm);
+  background: var(--color-primary-tint);
+  border-radius: var(--radius);
+  color: var(--color-primary);
+  font-family: var(--font-music);
+}
+
+/* 快捷和弦按钮行 */
+.sidebar-chord-quick {
+  display: flex;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+/* 统计信息列表 */
+.sidebar-stats {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* 快捷键列表 */
+.sidebar-shortcuts {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sidebar-shortcuts code {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-primary-tint);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  margin-right: 4px;
+}
+
+/* 空态占位 */
+.sidebar-empty {
+  color: var(--color-text-tertiary);
+  font-size: 13px;
+  text-align: center;
+  padding: var(--space-lg);
+}
+
+
+/* ================================================================
+ * 10. 底部状态栏  [STATUSBAR]
+ * ================================================================ */
+.statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 20px;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  min-height: 30px;
+}
+
+.statusbar-left,
+.statusbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+
+/* ================================================================
+ * 11. 软键盘  [KEYBOARD]
+ * ----------------------------------------------------------------
+ * 底部触摸式键盘，模拟钢琴按键质感
+ * ================================================================ */
+.soft-keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 20px;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0 -2px 8px rgba(60, 50, 40, 0.04);
+}
+
+.soft-key-row {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.soft-key {
+  min-width: 38px;
+  height: 38px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  font-family: var(--font-music);
+  box-shadow: var(--shadow-xs);
+  color: var(--color-text);
+  position: relative;
+}
+
+.soft-key::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 2px;
+  font-size: 8px;
+  font-weight: 400;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-ui);
+}
+
+.soft-key:hover {
+  background: var(--color-primary-tint);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.soft-key:active {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.soft-key-wide {
+  min-width: 64px;
+  font-size: 14px;
+}
+
+
+/* ================================================================
+ * 12. 模态框  [MODAL]
+ * ----------------------------------------------------------------
+ * 遮罩层 + 卡片容器
+ * ================================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(40, 35, 28, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: overlayIn var(--transition) ease;
+}
+
+.modal {
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  min-width: 380px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow: auto;
+  box-shadow: var(--shadow-xl);
+  animation: modalIn var(--transition-slow);
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: var(--color-text);
+}
+
+.modal-body {
+  margin-bottom: 18px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* 帮助内容 */
+.help-content {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--color-text);
+}
+
+.help-content h4 {
+  margin-top: 14px;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.help-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6px 0;
+}
+
+.help-content td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.help-content td:first-child {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  width: 130px;
+  color: var(--color-primary);
+}
+
+
+/* ================================================================
+ * 13. Toast 提示  [TOAST]
+ * ================================================================ */
+.toast {
+  position: fixed;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 24px;
+  background: var(--color-text);
+  color: var(--color-text-inverse);
+  border-radius: 24px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 200;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn var(--transition-slow);
+}
+
+
+/* ================================================================
+ * 14. 动画关键帧  [KEYFRAMES]
+ * ================================================================ */
+
+/* 遮罩层淡入 */
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 模态框弹出 */
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Toast 滑入 */
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Toast 淡出 */
+@keyframes toastOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+}
+
+
+/* ================================================================
+ * 15. 响应式  [RESPONSIVE]
+ * ================================================================ */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 8px 14px;
+  }
+
+  .app-logo {
+    font-size: 16px;
+  }
+
+  .app-logo-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+
+  .toolbar {
+    padding: 6px 10px;
+    gap: 4px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .toolbar-group {
+    flex-shrink: 0;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .btn {
+    padding: 5px 9px;
+    font-size: 12px;
+  }
+
+  .soft-key {
+    min-width: 34px;
+    height: 34px;
+    font-size: 14px;
+  }
+
+  .soft-key-wide {
+    min-width: 50px;
+  }
+
+  .editor-canvas {
+    padding: 12px 8px;
+  }
+}
+
+
+/* ================================================================
+ * 16. 打印  [PRINT]
+ * ----------------------------------------------------------------
+ * 隐藏所有交互 UI，只保留谱面
+ * ================================================================ */
+@media print {
+  .app-header,
+  .toolbar,
+  .editor-toolbar,
+  .sidebar,
+  .soft-keyboard,
+  .statusbar,
+  .modal-overlay,
+  .toast {
+    display: none !important;
+  }
+
+  .app {
+    display: block;
+    height: auto;
+    overflow: visible;
+  }
+
+  .app-body {
+    display: block;
+    overflow: visible;
+  }
+
+  .editor-main {
+    overflow: visible;
+  }
+
+  .editor-canvas {
+    overflow: visible;
+    background: white;
+    padding: 0;
+  }
+
+  .score-container {
+    overflow: visible;
+    padding: 0;
+    border: none;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+}
+
+/* ================================================================
+ * 人力V工作台 样式
+ * ================================================================ */
+.app-view-switch {
+  display: flex;
+  gap: 4px;
+  margin-left: 16px;
+}
+
+.humanv {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+  height: calc(100vh - 56px);
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.humanv-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.humanv-info {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #666;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+
+.humanv-clean-info { color: #2e7d32; }
+.humanv-sample-info { color: #6a1b9a; }
+.humanv-sep { width: 1px; height: 20px; background: #ddd; display: inline-block; }
+
+.humanv-error {
+  color: #c62828;
+  background: #ffebee;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.humanv-status {
+  color: #1b5e20;
+  background: #e8f5e9;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.synth-playback {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  background: #f5f8fc;
+  border: 1px solid #dbe4f0;
+  border-radius: 6px;
+}
+
+.synth-playback-time {
+  min-width: 84px;
+  color: #555;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.synth-playback-progress {
+  flex: 1 1 180px;
+  min-width: 140px;
+  accent-color: #2f5fa8;
+}
+
+.synth-playback-error {
+  color: #c62828;
+  font-size: 12px;
+}
+
+.humanv-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  gap: 6px;
+  border: 2px dashed #ddd;
+  border-radius: 10px;
+}
+
+.humanv-hint { font-size: 12px; }
+
+.piano-roll {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  flex: 1;
+  min-height: 200px;
+}

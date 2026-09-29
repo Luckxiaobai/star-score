@@ -1,0 +1,867 @@
+/* ================================================================
+ * HumanV · Dark Laboratory Console
+ * ----------------------------------------------------------------
+ * 作用域：仅 .humanv 子树。简谱编辑器视图保持原亮色主题。
+ * 设计参考：Bitwig / iZotope Ozone 暗色仪器风、Raycast 悬浮玻璃。
+ * 所有颜色走 --lab-* token，禁止再写死十六进制色值。
+ * ================================================================ */
+
+.humanv {
+  /* --- 暗色 token（覆盖 lab-ui.css 的亮色变量） --- */
+  --lab-bg: #0b1416;
+  --lab-surface: rgba(20, 32, 35, 0.78);
+  --lab-surface-solid: #142024;
+  --lab-surface-2: #1b2c30;
+  --lab-surface-3: #22363b;
+  --lab-ink: #d7e7e6;
+  --lab-ink-strong: #eefaf8;
+  --lab-muted: #7f9897;
+  --lab-line: rgba(130, 210, 200, 0.14);
+  --lab-line-strong: rgba(130, 210, 200, 0.32);
+  --lab-accent: #2dd4bf;
+  --lab-accent-strong: #14b8a6;
+  --lab-accent-dim: rgba(45, 212, 191, 0.12);
+  --lab-warn: #fbbf24;
+  --lab-warn-dim: rgba(251, 191, 36, 0.12);
+  --lab-danger: #f87171;
+  --lab-danger-dim: rgba(248, 113, 113, 0.12);
+  --lab-ok: #34d399;
+  --lab-ok-dim: rgba(52, 211, 153, 0.12);
+  --lab-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+  color: var(--lab-ink);
+  background:
+    radial-gradient(1200px 600px at 82% -10%, rgba(45, 212, 191, 0.09), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(20, 184, 166, 0.06), transparent 60%),
+    linear-gradient(rgba(130, 210, 200, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(130, 210, 200, 0.045) 1px, transparent 1px),
+    var(--lab-bg);
+  background-size: auto, auto, 32px 32px, 32px 32px, auto;
+}
+
+/* ---------------- 拖拽激活 ---------------- */
+
+.humanv.is-drag-active {
+  outline: 2px dashed var(--lab-accent);
+  outline-offset: -8px;
+  background-color: var(--lab-accent-dim);
+}
+
+/* ---------------- 按钮（暗色玻璃） ---------------- */
+
+.humanv .btn {
+  border: 1px solid var(--lab-line);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--lab-ink);
+  box-shadow: none;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    color 150ms ease;
+}
+
+.humanv .btn:hover:not(:disabled) {
+  background: rgba(45, 212, 191, 0.09);
+  border-color: var(--lab-accent);
+  color: var(--lab-ink-strong);
+  box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.18), 0 6px 18px rgba(0, 0, 0, 0.35);
+  transform: translateY(-1px);
+}
+
+.humanv .btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.humanv .btn:disabled,
+.humanv .btn:disabled:hover {
+  opacity: 0.42;
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--lab-line);
+  color: var(--lab-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.humanv .btn-primary {
+  border-color: var(--lab-accent-strong);
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  color: #03211d;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(20, 184, 166, 0.28);
+}
+
+.humanv .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #115e59, #0d9488);
+  border-color: var(--lab-accent);
+  color: #eafffb;
+  box-shadow: 0 8px 26px rgba(20, 184, 166, 0.42);
+}
+
+.humanv .btn-danger {
+  border-color: rgba(248, 113, 113, 0.55);
+  background: var(--lab-danger-dim);
+  color: #fecaca;
+}
+
+.humanv .btn-danger:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.22);
+  border-color: var(--lab-danger);
+  color: #fff;
+}
+
+.humanv .btn-icon {
+  width: 30px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.humanv .btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.humanv .humanv-sep {
+  width: 1px;
+  height: 18px;
+  margin: 0 4px;
+  background: var(--lab-line-strong);
+}
+
+/* ---------------- 表单控件 ---------------- */
+
+.humanv select,
+.humanv input[type="number"],
+.humanv input[type="text"],
+.humanv textarea {
+  background: var(--lab-surface-2);
+  border: 1px solid var(--lab-line);
+  border-radius: 6px;
+  color: var(--lab-ink);
+  font: inherit;
+  padding: 5px 8px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.humanv select:focus,
+.humanv input:focus,
+.humanv textarea:focus {
+  outline: none;
+  border-color: var(--lab-accent);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.16);
+}
+
+.humanv select option {
+  background: var(--lab-surface-solid);
+  color: var(--lab-ink);
+}
+
+.humanv-inline-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--lab-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.humanv-inline-field select {
+  min-width: 68px;
+}
+
+/* ---------------- 控制台头（身份区） ---------------- */
+
+.humanv-consolebar {
+  padding: 12px 16px;
+  background:
+    linear-gradient(90deg, rgba(45, 212, 191, 0.1), transparent 38%),
+    var(--lab-surface);
+  border-color: var(--lab-line);
+}
+
+.humanv-console-kicker {
+  color: var(--lab-accent);
+}
+
+.humanv-console-identity strong {
+  color: var(--lab-ink-strong);
+  font-weight: 600;
+}
+
+.humanv-live-dot {
+  color: var(--lab-muted);
+}
+
+/* ---------------- 状态轨 ---------------- */
+
+.humanv-status-rail {
+  background: var(--lab-surface);
+  border-color: var(--lab-line);
+  backdrop-filter: blur(14px);
+}
+
+.humanv-rail-heading {
+  color: var(--lab-accent);
+  border-bottom: 1px solid var(--lab-line);
+  padding-bottom: 6px;
+  margin-bottom: 2px;
+}
+
+/* ---------------- 工作流步骤 ---------------- */
+
+.humanv-workflow {
+  color: var(--lab-muted);
+  font-size: 12px;
+}
+
+.workflow-step {
+  padding: 4px 10px;
+  border: 1px solid var(--lab-line-strong);
+  border-radius: 999px;
+  background: var(--lab-surface-2);
+  color: var(--lab-muted);
+}
+
+.workflow-step.is-done {
+  color: var(--lab-ok);
+  border-color: rgba(52, 211, 153, 0.45);
+  background: var(--lab-ok-dim);
+}
+
+.workflow-step.is-ready {
+  color: #03211d;
+  border-color: var(--lab-accent);
+  background: linear-gradient(135deg, #14b8a6, #2dd4bf);
+  font-weight: 600;
+  box-shadow: 0 0 16px rgba(45, 212, 191, 0.3);
+}
+
+.workflow-arrow {
+  color: var(--lab-line-strong);
+}
+
+.workflow-spacer {
+  flex: 1 1 20px;
+}
+
+.workflow-provider {
+  color: var(--lab-accent);
+}
+
+.workflow-dirty {
+  color: var(--lab-warn);
+}
+
+/* ---------------- 后端状态胶囊 ---------------- */
+
+.backend-pill {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--lab-line-strong);
+  background: var(--lab-surface-2);
+  color: var(--lab-muted);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+}
+
+.backend-pill:hover {
+  border-color: var(--lab-accent);
+}
+
+.backend-pill.is-online {
+  color: var(--lab-ok);
+  border-color: rgba(52, 211, 153, 0.45);
+  background: var(--lab-ok-dim);
+}
+
+.backend-pill.is-offline {
+  color: var(--lab-danger);
+  border-color: rgba(248, 113, 113, 0.45);
+  background: var(--lab-danger-dim);
+}
+
+.backend-pill.is-checking {
+  color: var(--lab-warn);
+  border-color: rgba(251, 191, 36, 0.45);
+  background: var(--lab-warn-dim);
+}
+
+/* ---------------- 选中工具条 ---------------- */
+
+.humanv-selection-tools {
+  align-items: stretch;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: 8px;
+  background: var(--lab-warn-dim);
+  color: var(--lab-warn);
+  font-size: 12px;
+}
+
+.humanv-selection-tools > span {
+  font-weight: 600;
+}
+
+.humanv-selection-tools .btn {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+/* ---------------- 信息条 / 错误 / 状态 ---------------- */
+
+.humanv-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 8px 12px;
+  border: 1px solid var(--lab-line);
+  border-radius: 8px;
+  background: var(--lab-surface);
+  color: var(--lab-muted);
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.humanv-info span:first-child {
+  color: var(--lab-ink-strong);
+}
+
+.humanv-clean-info {
+  color: var(--lab-ok);
+}
+
+.humanv-sample-info {
+  color: var(--lab-accent);
+}
+
+.humanv-status,
+.humanv-error {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  border: 1px solid var(--lab-line);
+}
+
+.humanv-status {
+  background: var(--lab-accent-dim);
+  border-color: rgba(45, 212, 191, 0.3);
+  color: var(--lab-accent);
+}
+
+.humanv-error {
+  background: var(--lab-danger-dim);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #fecaca;
+}
+
+/* ---------------- 空状态 / 启动卡片 ---------------- */
+
+.humanv-empty {
+  justify-content: center;
+  gap: 22px;
+  padding: 32px 24px;
+  border: 1px dashed var(--lab-line-strong);
+  border-radius: 12px;
+  background:
+    linear-gradient(rgba(45, 212, 191, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45, 212, 191, 0.04) 1px, transparent 1px),
+    var(--lab-surface);
+  background-size: 28px 28px;
+  color: var(--lab-muted);
+}
+
+.humanv-empty-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.humanv-empty-copy strong {
+  color: var(--lab-ink-strong);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.humanv-empty-copy span {
+  font-size: 12.5px;
+}
+
+.humanv-start-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  width: min(900px, 100%);
+}
+
+.humanv-start-card {
+  position: relative;
+  display: flex;
+  min-height: 130px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 18px;
+  overflow: hidden;
+  border: 1px solid var(--lab-line);
+  border-radius: 10px;
+  background: var(--lab-surface-2);
+  color: var(--lab-muted);
+  text-align: left;
+  transition:
+    transform 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    background-color 200ms ease;
+}
+
+button.humanv-start-card {
+  cursor: pointer;
+}
+
+button.humanv-start-card:hover {
+  border-color: var(--lab-accent);
+  background: var(--lab-surface-3);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(45, 212, 191, 0.18);
+  transform: translateY(-2px);
+}
+
+.humanv-start-card strong {
+  color: var(--lab-ink-strong);
+  font-size: 15px;
+}
+
+.humanv-start-card span:last-child {
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.humanv-start-card.is-static {
+  cursor: default;
+}
+
+.humanv-start-card.is-done {
+  border-color: rgba(52, 211, 153, 0.4);
+  background: var(--lab-ok-dim);
+}
+
+.humanv-start-index {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--lab-accent-dim);
+  color: var(--lab-accent);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.humanv-start-index.is-done {
+  color: #03211d;
+  background: var(--lab-ok);
+}
+
+/* ---------------- 命令面板 / 工程对话框 ---------------- */
+
+.command-overlay,
+.project-overlay {
+  position: fixed;
+  z-index: 1100;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: min(12vh, 96px) 16px 16px;
+  background: rgba(4, 10, 11, 0.66);
+  backdrop-filter: blur(4px);
+}
+
+.command-palette,
+.project-dialog {
+  width: min(640px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--lab-line-strong);
+  border-radius: 12px;
+  background: var(--lab-surface-solid);
+  color: var(--lab-ink);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.6);
+}
+
+.command-search,
+.project-search,
+.project-save-form input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 0;
+  border-bottom: 1px solid var(--lab-line);
+  outline: 0;
+  padding: 14px 16px;
+  background: transparent;
+  color: var(--lab-ink-strong);
+  font: inherit;
+}
+
+.command-search::placeholder,
+.project-search::placeholder {
+  color: var(--lab-muted);
+}
+
+.command-list,
+.project-list {
+  max-height: min(52vh, 460px);
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.command-item,
+.project-list-item {
+  display: grid;
+  width: 100%;
+  box-sizing: border-box;
+  grid-template-columns: 68px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 7px;
+  padding: 10px;
+  background: transparent;
+  color: var(--lab-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.command-item.is-active,
+.command-item:hover,
+.project-list-item:hover {
+  background: var(--lab-accent-dim);
+}
+
+.command-item:disabled,
+.project-list-item:disabled {
+  color: var(--lab-muted);
+  cursor: not-allowed;
+}
+
+.command-group {
+  color: var(--lab-muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.command-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.command-item kbd {
+  color: var(--lab-muted);
+  font-size: 11px;
+  font-family: "Cascadia Code", Consolas, monospace;
+}
+
+.command-empty,
+.project-list-empty {
+  padding: 28px;
+  color: var(--lab-muted);
+  text-align: center;
+}
+
+.project-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--lab-line);
+}
+
+.project-dialog-header h3 {
+  margin: 0;
+  color: var(--lab-ink-strong);
+  font-size: 16px;
+}
+
+.project-save-form {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.project-save-form label {
+  color: var(--lab-muted);
+  font-size: 12px;
+}
+
+.project-save-form input {
+  border: 1px solid var(--lab-line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--lab-surface-2);
+  color: var(--lab-ink);
+}
+
+.project-save-form button {
+  justify-self: end;
+}
+
+.project-list-item {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.project-list-item time {
+  color: var(--lab-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------- 合成播放条 ---------------- */
+
+.synth-playback-volume {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--lab-muted);
+  font-size: 12px;
+}
+
+.synth-playback-volume input {
+  width: 72px;
+  accent-color: var(--lab-accent);
+}
+
+/* ---------------- AI 面板 ---------------- */
+
+.ai-panel {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(45, 212, 191, 0.28);
+  border-radius: 10px;
+  background:
+    linear-gradient(130deg, rgba(45, 212, 191, 0.08), transparent 40%),
+    var(--lab-surface);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.ai-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ai-panel-header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.ai-panel-header strong {
+  color: var(--lab-ink-strong);
+}
+
+.ai-panel-header span,
+.ai-hint,
+.ai-result-summary span {
+  color: var(--lab-muted);
+  font-size: 12px;
+}
+
+.ai-config-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ai-config-grid label,
+.ai-prompt-field {
+  display: grid;
+  gap: 5px;
+  color: var(--lab-muted);
+  font-size: 12px;
+}
+
+.ai-config-grid input,
+.ai-prompt-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--lab-line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: var(--lab-surface-2);
+  color: var(--lab-ink);
+  font: inherit;
+}
+
+.ai-config-grid input:focus,
+.ai-prompt-field textarea:focus {
+  outline: none;
+  border-color: var(--lab-accent);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.16);
+}
+
+.ai-model-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-model-input input {
+  min-width: 0;
+  flex: 1;
+}
+
+.ai-prompt-field textarea {
+  resize: vertical;
+  min-height: 64px;
+}
+
+.ai-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ai-result {
+  display: grid;
+  gap: 8px;
+}
+
+.ai-result-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ai-segment-list {
+  display: grid;
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid var(--lab-line);
+  border-radius: 7px;
+  background: var(--lab-surface-2);
+}
+
+.ai-segment {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 10px;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--lab-line);
+  font-size: 12px;
+}
+
+.ai-segment:last-child {
+  border-bottom: 0;
+}
+
+.ai-segment span {
+  color: var(--lab-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ai-segment strong {
+  color: var(--lab-ink-strong);
+}
+
+/* ---------------- 钢琴卷帘外框 ---------------- */
+
+.humanv .piano-roll {
+  border-color: var(--lab-line-strong);
+  box-shadow:
+    0 0 0 1px rgba(45, 212, 191, 0.08),
+    0 18px 42px rgba(0, 0, 0, 0.4);
+}
+
+/* ---------------- 交错入场动效 ---------------- */
+
+.humanv-consolebar {
+  animation-delay: 0ms;
+}
+
+.humanv-status-rail {
+  animation-delay: 70ms;
+}
+
+.humanv-workspace {
+  animation-delay: 140ms;
+}
+
+.ai-panel,
+.humanv-info,
+.humanv-status,
+.humanv-error,
+.synth-playback {
+  animation-delay: 200ms;
+}
+
+/* ---------------- 响应式 ---------------- */
+
+@media (max-width: 760px) {
+  .humanv-start-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .humanv-start-card {
+    min-height: 96px;
+  }
+
+  .command-item {
+    grid-template-columns: 54px minmax(0, 1fr);
+  }
+
+  .command-item kbd {
+    display: none;
+  }
+
+  .project-list-item {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-config-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------------- 减弱动效 ---------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .humanv .btn,
+  .humanv .backend-pill,
+  .humanv .humanv-start-card,
+  .command-item,
+  .project-list-item,
+  .humanv select,
+  .humanv input,
+  .humanv textarea {
+    transition: none;
+  }
+
+  .humanv-consolebar,
+  .humanv-status-rail,
+  .humanv-workspace,
+  .ai-panel,
+  .humanv-info,
+  .humanv-status,
+  .humanv-error,
+  .synth-playback,
+  .piano-roll,
+  .command-palette {
+    animation: none;
+  }
+}

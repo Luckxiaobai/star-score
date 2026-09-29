@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+
+# Runtime caches & generated data
+slice_cache/
+exports/
+tmp/
+logs/
+*.log
+
+# Env / secrets
+.env
+.env.local
+*.local
+
+# Source archive (large, do not commit)
+star-score-source.tar.gz
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.sw?

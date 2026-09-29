@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HumanV Workbench</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="toolbar">
+  <button id="btn-new">新建工程</button>
+  <span class="sep"></span>
+  <label for="file-midi">上传 MIDI</label>
+  <input type="file" id="file-midi" accept=".mid,.midi,audio/midi">
+  <label for="file-audio">上传素材</label>
+  <input type="file" id="file-audio" accept="audio/*">
+  <span class="sep"></span>
+  <button id="btn-bind" disabled>绑定</button>
+  <button id="btn-render" disabled>生成</button>
+  <button id="btn-play" disabled>播放</button>
+  <span class="sep"></span>
+  <button id="btn-download" disabled>下载 WAV</button>
+  <span class="status" id="status">就绪</span>
+</div>
+<div id="canvas-wrap">
+  <canvas id="layer0"></canvas>
+  <canvas id="layer1"></canvas>
+  <canvas id="layer2"></canvas>
+</div>
+<div id="info-bar">
+  <span id="info-notes">notes: 0</span>
+  <span id="info-view">view: 0 - 1920 tick</span>
+  <span id="info-bpm">bpm: -</span>
+  <span id="info-warnings">warnings: 0</span>
+  <span id="info-ws">ws: 连接中...</span>
+</div>
+<audio id="player" preload="none"></audio>
+<script src="render_engine.js"></script>
+<script src="ws_client.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const statusEl = $('status');
+  const infoNotes = $('info-notes');
+  const infoView = $('info-view');
+  const infoBpm = $('info-bpm');
+  const infoWarnings = $('info-warnings');
+  const infoWS = $('info-ws');
+  const player = $('player');
+  const engine = new RenderEngine($('canvas-wrap'));
+  const ws = new WSClient('ws://' + location.host + '/ws');
+  let ppq = 480;
+  let bpm = 120;
+  let hasAudio = false;
+  let hasMidi = false;
+  function setStatus(text) { statusEl.textContent = text; }
+  function setWarnings(n) { infoWarnings.textContent = 'warnings: ' + n; }
+  // ---- demo 音符（首屏不空）----
+  const demoNotes = [
+    { note_id: 'demo1', midi_pitch: 60, start_tick: 0,    duration_tick: 480,
+      velocity: 100, enabled: true, note_volume_db: 0,
+      slice_ref: { slice_hash: '', semitone_shift: 0 } },
+    { note_id: 'demo2', midi_pitch: 64, start_tick: 480,  duration_tick: 480,
+      velocity: 100, enabled: true, note_volume_db: 0,
+      slice_ref: { slice_hash: '', semitone_shift: 6 } },
+    { note_id: 'demo3', midi_pitch: 67, start_tick: 960,  duration_tick: 480,
+      velocity: 100, enabled: true, note_volume_db: 0,
+      slice_ref: { slice_hash: '', semitone_shift: 9 } },
+  ];
+  function updateInfo() {
+    infoNotes.textContent = 'notes: ' + engine.notes.length;
+    infoView.textContent = 'view: ' +
+      Math.round(engine.view.startTick) + ' - ' +
+      Math.round(engine.view.startTick + engine.view.widthTick) + ' tick';
+    infoBpm.textContent = 'bpm: ' + bpm + ' / ppq: ' + ppq;
+  }
+  function setNotes(notes) {
+    engine.setNotes(notes);
+    updateInfo();
+    $('btn-bind').disabled = !(hasAudio && hasMidi);
+    $('btn-render').disabled = !hasMidi;
+  }
+  engine.onNoteChange = (note) => {
+    setStatus('音符已拖动：pitch=' + note.midi_pitch + ', tick=' + note.start_tick);
+  };
+  // ---- WS 事件 ----
+  ws.on('__open', () => { infoWS.textContent = 'ws: 已连接'; });
+  ws.on('render_notify', (p) => {
+    if (p.event === 'connected') {
+      infoWS.textContent = 'ws: 已连接 (backend v?)';
+    } else if (p.event === 'render_complete') {
+      setStatus('渲染完成，告警 ' + p.warnings_count + ' 条');
+      setWarnings(p.warnings_count);
+    } else if (p.event === 'bind_complete') {
+      setStatus('绑定完成，告警 ' + p.warnings_count + ' 条');
+    }
+  });
+  // ---- 播放头同步 ----
+  function rafLoop() {
+    if (!player.paused && player.duration > 0) {
+      const sec = player.currentTime;
+      const tick = Math.round(sec * ppq * bpm / 60);
+      engine.setPlayhead(tick);
+    }
+    requestAnimationFrame(rafLoop);
+  }
+  requestAnimationFrame(rafLoop);
+  // ---- 工具栏操作 ----
+  $('btn-new').addEventListener('click', async () => {
+    const r = await fetch('/api/project/new?name=web_ui', { method: 'POST' });
+    if (!r.ok) { setStatus('新建失败：' + r.status); return; }
+    hasAudio = false; hasMidi = false;
+    player.pause(); player.removeAttribute('src');
+    setNotes(demoNotes);
+    setWarnings(0);
+    setStatus('新建工程成功');
+  });
+  $('file-midi').addEventListener('change', async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    setStatus('上传 MIDI：' + f.name);
+    const fd = new FormData();
+    fd.append('file', f);
+    fd.append('track_index', '0');
+    const r = await fetch('/api/midi/import', { method: 'POST', body: fd });
+    if (!r.ok) {
+      const t = await r.text();
+      setStatus('MIDI 上传失败：' + r.status + ' ' + t.slice(0, 120));
+      return;
+    }
+    const data = await r.json();
+    ppq = data.ppq;
+    bpm = data.bpm;
+    hasMidi = true;
+    engine.setMidiContext(ppq, data.time_signature);
+    setNotes(data.notes || []);
+    setStatus('MIDI 已导入：' + data.raw_notes + ' → ' + data.cleaned_notes + ' 音符');
+    e.target.value = '';
+  });
+  $('file-audio').addEventListener('change', async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    setStatus('上传素材：' + f.name);
+    const fd = new FormData();
+    fd.append('file', f);
+    const r = await fetch('/api/slice/import', { method: 'POST', body: fd });
+    if (!r.ok) {
+      const t = await r.text();
+      setStatus('素材上传失败：' + r.status + ' ' + t.slice(0, 120));
+      return;
+    }
+    const data = await r.json();
+    hasAudio = true;
+    setStatus('素材已导入：' + data.slice_hash + ' (' + data.duration_sec.toFixed(2) + 's)');
+    $('btn-bind').disabled = !(hasAudio && hasMidi);
+    e.target.value = '';
+  });
+  $('btn-bind').addEventListener('click', async () => {
+    setStatus('绑定中...');
+    const r = await fetch('/api/bind', { method: 'POST' });
+    if (!r.ok) {
+      const t = await r.text();
+      setStatus('绑定失败：' + r.status + ' ' + t.slice(0, 120));
+      return;
+    }
+    const data = await r.json();
+    setWarnings(data.warnings_count);
+    // 重新拉取工程（拿到了 slice_ref）
+    const r2 = await fetch('/api/project/current');
+    if (r2.ok) {
+      const proj = await r2.json();
+      engine.setNotes(proj.notes || []);
+      updateInfo();
+    }
+    setStatus('绑定完成：' + data.bound_notes + ' 音符，' + data.warnings_count + ' 告警');
+    $('btn-render').disabled = false;
+  });
+  $('btn-render').addEventListener('click', async () => {
+    setStatus('渲染中...');
+    const r = await fetch('/api/render', { method: 'POST' });
+    if (!r.ok) {
+      const t = await r.text();
+      setStatus('渲染失败：' + r.status + ' ' + t.slice(0, 120));
+      return;
+    }
+    const data = await r.json();
+    setWarnings(data.warnings_count);
+    player.src = '/api/render/download?t=' + Date.now();
+    $('btn-play').disabled = false;
+    $('btn-download').disabled = false;
+    setStatus('渲染完成：' + (data.wav_size / 1024).toFixed(1) + ' KB');
+  });
+  $('btn-play').addEventListener('click', () => {
+    if (player.paused) {
+      player.play();
+      $('btn-play').textContent = '暂停';
+    } else {
+      player.pause();
+      $('btn-play').textContent = '播放';
+    }
+  });
+  player.addEventListener('ended', () => {
+    $('btn-play').textContent = '播放';
+    engine.setPlayhead(0);
+  });
+  $('btn-download').addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.href = '/api/render/download';
+    a.download = 'render.wav';
+    a.click();
+  });
+  // ---- 首屏 ----
+  setNotes(demoNotes);
+  setStatus('就绪（先点"新建工程"，再上传 MIDI 与素材）');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,365 @@
+/* ================================================================
+ * 星谱识音 · 模型管理器样式
+ * ----------------------------------------------------------------
+ * 设计理念：与音频识别对话框保持一致的视觉风格
+ *   - 毛玻璃遮罩背景
+ *   - 圆角卡片 + 分层阴影
+ *   - 模型卡片网格布局
+ *   - 下载进度条用主色→金色渐变
+ *
+ * 目录：
+ *   1. 模态框容器         [MODAL]
+ *   2. 后端配置区         [BACKEND]
+ *   3. 模型列表           [MODEL-LIST]
+ *   4. 模型卡片           [MODEL-CARD]
+ *   5. 下载进度           [PROGRESS]
+ *   6. 按钮               [BUTTONS]
+ *   7. 消息提示           [MESSAGE]
+ *   8. 响应式             [RESPONSIVE]
+ * ================================================================ */
+
+/* ================================================================
+ * 1. 模态框容器  [MODAL]
+ * ================================================================ */
+.mm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: mmFadeIn 0.2s ease;
+}
+
+@keyframes mmFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mm-modal {
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  width: 640px;
+  max-width: 92vw;
+  max-height: 88vh;
+  overflow: auto;
+  box-shadow: var(--shadow-xl);
+  animation: mmSlideIn 0.3s ease;
+}
+
+@keyframes mmSlideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.mm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--color-border-light);
+}
+
+.mm-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.mm-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color var(--transition-fast);
+}
+
+.mm-close:hover {
+  color: var(--color-primary);
+}
+
+/* ================================================================
+ * 2. 后端配置区  [BACKEND]
+ * ================================================================ */
+.mm-backend {
+  background: var(--color-primary-tint);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  border: 1px solid var(--color-border-light);
+}
+
+.mm-backend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mm-backend-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.mm-backend-input {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.mm-backend-input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -1px;
+}
+
+.mm-backend-dot {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.mm-backend-dot.on {
+  color: #16a34a;
+}
+
+.mm-backend-dot.off {
+  color: var(--color-text-tertiary);
+}
+
+.mm-backend-hint {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  margin-top: 8px;
+  padding: 0 2px;
+}
+
+/* ================================================================
+ * 3. 模型列表  [MODEL-LIST]
+ * ================================================================ */
+.mm-model-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ================================================================
+ * 4. 模型卡片  [MODEL-CARD]
+ * ================================================================ */
+.mm-model-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border-light);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.mm-model-card.installed {
+  background: rgba(22, 163, 74, 0.04);
+  border-color: rgba(22, 163, 74, 0.2);
+}
+
+.mm-model-card.not-installed {
+  background: var(--color-surface);
+}
+
+.mm-model-card:hover {
+  border-color: var(--color-primary-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.mm-model-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.mm-model-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.mm-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.mm-badge-ok {
+  background: rgba(22, 163, 74, 0.15);
+  color: #15803d;
+}
+
+.mm-badge-warn {
+  background: rgba(200, 155, 60, 0.15);
+  color: #a67c1e;
+}
+
+.mm-badge-info {
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+.mm-model-desc {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+
+.mm-model-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
+/* ================================================================
+ * 5. 下载进度  [PROGRESS]
+ * ================================================================ */
+.mm-download-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.mm-progress-bar {
+  width: 120px;
+  height: 6px;
+  background: var(--color-border-light);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.mm-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 6px rgba(200, 155, 60, 0.3);
+}
+
+.mm-progress-text {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* ================================================================
+ * 6. 按钮  [BUTTONS]
+ * ================================================================ */
+.mm-btn {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.mm-btn-download {
+  background: var(--color-primary);
+  color: white;
+}
+
+.mm-btn-download:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.mm-btn-download:disabled {
+  background: var(--color-border);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.mm-btn-delete {
+  background: transparent;
+  color: #dc2626;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.mm-btn-delete:hover {
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.mm-btn-refresh {
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-light);
+}
+
+.mm-btn-refresh:hover {
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
+}
+
+/* ================================================================
+ * 7. 消息提示  [MESSAGE]
+ * ================================================================ */
+.mm-message {
+  margin-top: 16px;
+  padding: 10px 16px;
+  background: var(--color-primary-light);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--color-primary-dark);
+  text-align: center;
+}
+
+/* ================================================================
+ * 8. 底部  [FOOTER]
+ * ================================================================ */
+.mm-footer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ================================================================
+ * 9. 响应式  [RESPONSIVE]
+ * ================================================================ */
+@media (max-width: 640px) {
+  .mm-modal {
+    padding: 20px;
+    width: 96vw;
+  }
+
+  .mm-model-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .mm-model-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .mm-model-meta {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}

@@ -1,0 +1,448 @@
+/* ================================================================
+ * 星谱识音 · 简谱谱面渲染样式
+ * ----------------------------------------------------------------
+ * 设计理念：将简谱渲染为精致的乐谱纸
+ *   - 白色纸面 + 柔和阴影模拟实体纸张
+ *   - 小节线用深墨色，非纯黑
+ *   - 音符数字用衬线体（Georgia），提升音乐质感
+ *   - 播放高亮用暖金色，与主色区分
+ *
+ * 目录：
+ *   1. 谱面容器           [CONTAINER]
+ *   2. 标题区             [TITLE]
+ *   3. 行头（调号拍号）    [HEADER]
+ *   4. 小节               [MEASURE]
+ *   5. 小节线             [BARLINE]
+ *   6. 和弦行             [CHORD]
+ *   7. 音符行             [NOTE-ROW]
+ *   8. 连音下划线         [BEAM]
+ *   9. 音符单元格         [NOTE-CELL]
+ *  10. 音符数字与符号     [NOTE-SYMBOL]
+ *  11. 八度点             [OCTAVE]
+ *  12. 歌词行             [LYRIC]
+ *  13. 响应式             [RESPONSIVE]
+ * ================================================================ */
+
+
+/* ================================================================
+ * 1. 谱面容器  [CONTAINER]
+ * ----------------------------------------------------------------
+ * 白色纸面，带圆角和阴影，模拟实体乐谱纸
+ * ================================================================ */
+.score-container {
+  flex: 1;
+  overflow: auto;
+  /* 谱面保持浅色纸卡：深色 chrome 中的白纸，记号 #3a3a3a 可读 */
+  background: #fdfcf9;
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  min-height: 400px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(130, 210, 200, 0.18);
+  color: #2b2b2b;
+}
+
+.score-container .score-title,
+.score-container .header-key,
+.score-container .header-time {
+  color: #2b2b2b;
+}
+
+.score-container .score-artist,
+.score-container .header-tempo {
+  color: #6b6b6b;
+}
+
+.score-title-block {
+  border-bottom-color: rgba(0, 0, 0, 0.12);
+}
+
+.score-inner {
+  position: relative;
+  min-height: 300px;
+}
+
+
+/* ================================================================
+ * 2. 标题区  [TITLE]
+ * ================================================================ */
+.score-title-block {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.score-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  letter-spacing: 0.02em;
+}
+
+.score-artist {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-top: 6px;
+  font-family: var(--font-ui);
+}
+
+.score-line {
+  position: relative;
+  border-bottom: 1px dashed transparent;
+  margin-bottom: 4px;
+}
+
+
+/* ================================================================
+ * 3. 行头（调号拍号速度）  [HEADER]
+ * ================================================================ */
+.score-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  font-family: var(--font-ui);
+}
+
+.header-key {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.header-time {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.header-tempo {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+
+/* ================================================================
+ * 4. 小节  [MEASURE]
+ * ----------------------------------------------------------------
+ * 点击区域 + hover/选中状态
+ * ================================================================ */
+.measure {
+  /* 小节线只由 .barline-* 元素统一绘制，避免边框与绝对定位线重复叠画 */
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.measure:hover {
+  background: rgba(61, 79, 124, 0.04);
+}
+
+.measure-selected {
+  background: rgba(61, 79, 124, 0.06);
+}
+
+
+/* ================================================================
+ * 5. 小节线  [BARLINE]
+ * ----------------------------------------------------------------
+ * 每个小节只在右边界画一条线（.barline-end），行首小节额外画
+ * 左线（.barline-line-start）；竖线只贯穿音符区，不压和弦/歌词。
+ * ================================================================ */
+.barline {
+  position: absolute;
+  top: 18px;
+  bottom: 12px;
+  pointer-events: none;
+}
+
+/* 行首细线 */
+.barline-line-start {
+  left: 0;
+  width: 1px;
+  background: #3a3a3a;
+}
+
+/* 普通小节细线（右边界） */
+.barline-end {
+  right: 0;
+  width: 1px;
+  background: #3a3a3a;
+}
+
+.barline-double {
+  right: 0;
+  width: 1px;
+  background: #3a3a3a;
+  box-shadow: -3px 0 0 0 #3a3a3a;
+}
+
+/* 终止线：内细外粗，右对齐 */
+.barline-final {
+  right: 0;
+  width: 3px;
+  background: #3a3a3a;
+}
+.barline-final::before {
+  content: '';
+  position: absolute;
+  right: 5px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #3a3a3a;
+}
+
+/* 反复记号：粗线 + 内侧细线 + 两点（简化处理，点居中偏内） */
+.barline-repeat-end {
+  right: 0;
+  width: 3px;
+  background: #3a3a3a;
+}
+.barline-repeat-end::before {
+  content: '';
+  position: absolute;
+  right: 5px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #3a3a3a;
+}
+.barline-repeat-end::after {
+  content: ': ';
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: #3a3a3a;
+}
+
+.barline-repeat-start {
+  right: auto;
+  left: 0;
+  width: 3px;
+  background: #3a3a3a;
+}
+.barline-repeat-start::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #3a3a3a;
+}
+
+.barline-repeat-both {
+  right: 0;
+  width: 3px;
+  background: #3a3a3a;
+}
+.barline-repeat-both::before {
+  content: '';
+  position: absolute;
+  right: 5px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #3a3a3a;
+}
+
+
+/* ================================================================
+ * 6. 和弦行  [CHORD]
+ * ================================================================ */
+.chord-row {
+  position: relative;
+  left: 0;
+  right: 0;
+}
+
+.chord-text {
+  position: absolute;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent);
+  font-family: var(--font-ui);
+  top: 0;
+}
+
+
+/* ================================================================
+ * 7. 音符行  [NOTE-ROW]
+ * ================================================================ */
+.note-row {
+  position: relative;
+}
+
+
+/* ================================================================
+ * 8. 连音下划线  [BEAM]
+ * ================================================================ */
+.beam-line {
+  position: absolute;
+  height: 1.5px;
+  background: #333;
+  z-index: 1;
+}
+
+
+/* ================================================================
+ * 9. 音符单元格  [NOTE-CELL]
+ * ----------------------------------------------------------------
+ * 可点击区域，含 hover/选中/光标/播放状态
+ * ================================================================ */
+.note-cell {
+  position: absolute;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  height: 28px;
+  transition: all var(--transition-fast);
+  z-index: 2;
+}
+
+.note-cell:hover {
+  background: rgba(61, 79, 124, 0.08);
+  border-radius: var(--radius-sm);
+}
+
+.note-selected {
+  background: rgba(61, 79, 124, 0.12);
+  border-radius: var(--radius-sm);
+}
+
+/* 光标：蓝色描边 */
+.note-cursor {
+  box-shadow: 0 0 0 2px var(--color-primary);
+  border-radius: var(--radius-sm);
+}
+
+/* 播放中：暖金色高亮 + 脉冲动画 */
+.note-playing {
+  background: rgba(200, 155, 60, 0.18);
+  border-radius: var(--radius-sm);
+  animation: notePulse 0.4s ease;
+}
+
+@keyframes notePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+
+/* ================================================================
+ * 10. 音符数字与符号  [NOTE-SYMBOL]
+ * ----------------------------------------------------------------
+ * 衬线体渲染数字，提升音乐出版物质感
+ * ================================================================ */
+.note-number {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--color-text);
+  font-family: var(--font-music);
+  line-height: 1;
+}
+
+/* 附点 */
+.note-dot {
+  font-size: 22px;
+  color: var(--color-text);
+  margin-left: 2px;
+}
+
+/* 延长线 */
+.note-dash {
+  font-size: 22px;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+
+/* ================================================================
+ * 11. 八度点  [OCTAVE]
+ * ================================================================ */
+.octave-dots {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.octave-up {
+  bottom: 100%;
+  margin-bottom: 2px;
+}
+
+.octave-down {
+  top: 100%;
+  margin-top: 2px;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-text);
+}
+
+
+/* ================================================================
+ * 12. 歌词行  [LYRIC]
+ * ================================================================ */
+.lyric-row {
+  position: relative;
+  left: 0;
+  right: 0;
+  height: 14px;
+}
+
+.lyric-text {
+  position: absolute;
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-ui);
+  bottom: 0;
+}
+
+
+/* ================================================================
+ * 13. 响应式  [RESPONSIVE]
+ * ================================================================ */
+@media (max-width: 768px) {
+  .score-container {
+    padding: 14px;
+    min-height: 300px;
+    border-radius: var(--radius);
+  }
+
+  .note-number {
+    font-size: 18px;
+  }
+
+  .header-key {
+    font-size: 14px;
+  }
+
+  .header-time {
+    font-size: 13px;
+  }
+
+  .score-title {
+    font-size: 22px;
+  }
+}

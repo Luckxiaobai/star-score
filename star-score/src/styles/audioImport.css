@@ -1,0 +1,510 @@
+/* ================================================================
+ * 星谱识音 · 音频识别对话框样式
+ * ----------------------------------------------------------------
+ * 设计理念：精致的模态对话框
+ *   - 毛玻璃遮罩背景
+ *   - 圆角卡片 + 分层阴影
+ *   - 上传区虚线边框 + 拖拽态视觉反馈
+ *   - 进度条用主色→金色渐变
+ *   - 统计卡片网格布局
+ *
+ * 目录：
+ *   1. 模态框容器           [MODAL]
+ *   2. 上传区               [UPLOAD]
+ *   3. 文件信息             [FILE-INFO]
+ *   4. 音频预览             [PREVIEW]
+ *   5. 分离面板             [SEPARATE]
+ *   6. 分析按钮             [ANALYZE-BTN]
+ *   7. 进度条               [PROGRESS]
+ *   8. 错误提示             [ERROR]
+ *   9. 分析结果             [RESULT]
+ *  10. 统计卡片             [STATS]
+ *  11. 波形可视化           [VIZ]
+ *  12. 结果操作             [ACTIONS]
+ *  13. 响应式               [RESPONSIVE]
+ * ================================================================ */
+
+
+/* ================================================================
+ * 1. 模态框容器  [MODAL]
+ * ================================================================ */
+.audio-modal {
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  width: 600px;
+  max-width: 92vw;
+  max-height: 88vh;
+  overflow: auto;
+  box-shadow: var(--shadow-xl);
+  animation: modalIn var(--transition-slow);
+}
+
+.audio-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--color-border-light);
+}
+
+.audio-modal-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.audio-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+
+/* ================================================================
+ * 2. 上传区  [UPLOAD]
+ * ----------------------------------------------------------------
+ * 虚线边框拖拽区域，hover/drag-over 有视觉反馈
+ * ================================================================ */
+.upload-zone {
+  border: 2px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: 52px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  background: var(--color-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-zone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, rgba(200, 155, 60, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.upload-zone:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-tint);
+}
+
+.upload-zone.drag-over {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  transform: scale(1.01);
+  box-shadow: var(--shadow-md);
+}
+
+.upload-icon {
+  font-size: 52px;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.upload-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 6px;
+  position: relative;
+  z-index: 1;
+}
+
+.upload-hint {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  position: relative;
+  z-index: 1;
+}
+
+
+/* ================================================================
+ * 3. 文件信息  [FILE-INFO]
+ * ================================================================ */
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border-light);
+}
+
+.file-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text);
+}
+
+.file-meta {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+}
+
+
+/* ================================================================
+ * 4. 音频预览  [PREVIEW]
+ * ================================================================ */
+.audio-preview {
+  padding: 4px 0;
+}
+
+
+/* ================================================================
+ * 5. 分离面板  [SEPARATE]
+ * ----------------------------------------------------------------
+ * 人声/伴奏分离的可选配置区域
+ * ================================================================ */
+.separate-panel {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  background: var(--color-bg);
+  margin: 4px 0;
+}
+
+.separate-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.separate-toggle input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
+.separate-body {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.separate-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.separate-label {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  min-width: 30px;
+}
+
+.separate-row select,
+.separate-row input[type="text"] {
+  flex: 1;
+  padding: 5px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.separate-hint {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+
+/* ================================================================
+ * 6. 分析按钮  [ANALYZE-BTN]
+ * ================================================================ */
+.audio-analyze-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+
+/* ================================================================
+ * 7. 进度条  [PROGRESS]
+ * ----------------------------------------------------------------
+ * 主色→金色渐变填充
+ * ================================================================ */
+.analysis-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border-light);
+}
+
+.progress-bar-bg {
+  height: 10px;
+  background: var(--color-border-light);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  border-radius: 5px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px rgba(200, 155, 60, 0.3);
+}
+
+.progress-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.progress-hint {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+
+/* ================================================================
+ * 8. 错误提示  [ERROR]
+ * ================================================================ */
+.audio-error {
+  padding: 12px 16px;
+  background: rgba(196, 92, 92, 0.08);
+  color: var(--color-danger);
+  border-radius: var(--radius);
+  border: 1px solid rgba(196, 92, 92, 0.2);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+
+/* ================================================================
+ * 9. 分析结果  [RESULT]
+ * ================================================================ */
+.analysis-result {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.analysis-result h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--color-border-light);
+}
+
+
+/* ================================================================
+ * 10. 统计卡片  [STATS]
+ * ----------------------------------------------------------------
+ * 4列网格，每格显示一项分析数据
+ * ================================================================ */
+.result-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 16px 8px;
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border-light);
+  transition: all var(--transition-fast);
+}
+
+.stat-item:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 4px;
+  font-family: var(--font-music);
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+
+/* ================================================================
+ * 11. 波形可视化  [VIZ]
+ * ================================================================ */
+.viz-section {
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  padding: 14px;
+  border: 1px solid var(--color-border-light);
+}
+
+.viz-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.viz-canvas {
+  width: 100%;
+  height: 120px;
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-light);
+}
+
+.viz-legend {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+
+/* ================================================================
+ * 12. 结果提示与操作  [ACTIONS]
+ * ================================================================ */
+.result-hint {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  background: var(--color-accent-light);
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(200, 155, 60, 0.2);
+  line-height: 1.6;
+}
+
+.result-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+
+/* ================================================================
+ * 14. 引擎状态面板  [ENGINE-STATUS]
+ * ----------------------------------------------------------------
+ * 显示各引擎的在线状态，帮助用户了解将使用哪个引擎
+ * ================================================================ */
+.engine-status-panel {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: var(--color-primary-tint);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border-light);
+}
+
+.engine-status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.engine-status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 4px 0;
+}
+
+.engine-status-item.ok {
+  color: var(--color-text-primary);
+}
+
+.engine-status-item.off {
+  color: var(--color-text-tertiary);
+}
+
+.engine-dot {
+  font-size: 10px;
+}
+
+.engine-status-item.ok .engine-dot {
+  color: var(--color-success, #16a34a);
+}
+
+.engine-status-item.off .engine-dot {
+  color: var(--color-text-tertiary);
+}
+
+.engine-name {
+  font-weight: 500;
+}
+
+.engine-tag {
+  margin-left: auto;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+}
+
+/* ================================================================
+ * 15. 响应式  [RESPONSIVE]
+ * ================================================================ */
+@media (max-width: 768px) {
+  .audio-modal {
+    width: 100%;
+    padding: 18px;
+    border-radius: var(--radius-lg);
+  }
+
+  .result-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .upload-zone {
+    padding: 36px 16px;
+  }
+
+  .audio-modal-header h2 {
+    font-size: 18px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+}
