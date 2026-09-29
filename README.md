@@ -114,3 +114,5 @@ new-chat/
 ## 📜 License
 
 [MIT](LICENSE) © Luckxiaobai
+
+本项目使用了第三方开源组件与预训练模型（含 [openvpi/GAME](https://github.com/openvpi/GAME) 的 ONNX 歌声转写模型、@spotify/basic-pitch 等，均为 MIT / Apache-2.0 / BSD 宽松协议）。完整版权声明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

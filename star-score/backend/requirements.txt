@@ -1,0 +1,7 @@
+# 后端运行依赖
+# HTTP 服务层本身仅用 Python 标准库；
+# GAME 歌声转写推理（backend/game_onnx.py）需要以下包：
+numpy>=1.26
+onnxruntime>=1.17
+# scipy 为可选（做高斯模糊解码；缺失时自动退化为纯 numpy）
+# scipy>=1.11
