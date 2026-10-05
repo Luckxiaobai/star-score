@@ -3,6 +3,8 @@ import { buildHumanVCommands } from '../src/features/humanv/commands';
 import { selectSynthProvider } from '../src/core/synth/registry';
 import { planToMidiDocument } from '../src/core/ai/midiGeneration';
 import { alignLyricsToDocument } from '../src/core/ai/alignment';
+import { applyCommands } from '../src/core/history/applyCommands';
+import type { Command } from '../src/core/history/command';
 import type { LyricUnit } from '../src/core/ai/types';
 
 const onlineContext = {
@@ -169,4 +171,54 @@ const unit = (text: string, start: number, end: number): LyricUnit => ({ text, s
   const doc = makeDoc([{ startTick: 0, durationTick: 480 }]);
   assert.equal(alignLyricsToDocument(doc, []).notes[0].lyric, undefined, 'empty units leaves lyrics unset');
 }
+
+// ---- applyCommands: Command[] -> MidiDocument (M5 adapter) ----
+
+{
+  const doc = makeDoc([{ startTick: 0, durationTick: 480 }]); // one note, id n0
+  // note.add: append two notes
+  const added = applyCommands(doc, [
+    { type: 'note.add', p: { notes: [{ pitch: 64, startTick: 480, durationTick: 480 }] } },
+  ]);
+  assert.equal(added.notes.length, 2, 'note.add appends');
+  assert.equal(added.totalTicks, 960, 'totalTicks recomputed after add');
+}
+
+{
+  const doc = makeDoc([
+    { startTick: 0, durationTick: 480 },
+    { startTick: 480, durationTick: 480 },
+  ]);
+  // note.remove: drop n1
+  const after = applyCommands(doc, [{ type: 'note.remove', p: { ids: ['n1'] } }]);
+  assert.equal(after.notes.length, 1, 'note.remove filters by id');
+  assert.equal(after.notes[0].id, 'n0');
+}
+
+{
+  const doc = makeDoc([{ startTick: 0, durationTick: 480 }]);
+  // note.move: shift n0 forward by 240 ticks and up by 2 semitones
+  const moved = applyCommands(doc, [
+    { type: 'note.move', p: { deltas: [{ id: 'n0', startTickDelta: 240, pitchDelta: 2 }] } },
+  ]);
+  assert.equal(moved.notes[0].startTick, 240, 'startTick shifted');
+  assert.equal(moved.notes[0].pitch, 62, 'pitch transposed');
+  assert.equal(moved.notes[0].id, 'n0', 'id kept stable after move');
+}
+
+{
+  const doc = makeDoc([{ startTick: 0, durationTick: 480 }]);
+  // lyric.set
+  const after = applyCommands(doc, [{ type: 'lyric.set', p: { id: 'n0', text: 'la' } }]);
+  assert.equal(after.notes[0].lyric, 'la', 'lyric.set writes text');
+}
+
+{
+  // invalid note.add throws (atomic failure)
+  const doc = makeDoc([{ startTick: 0, durationTick: 480 }]);
+  assert.throws(() =>
+    applyCommands(doc, [{ type: 'note.add', p: { notes: [{ pitch: NaN, startTick: 0, durationTick: 0 }] } as any }]),
+  );
+}
+
 console.log('humanv core checks passed');
