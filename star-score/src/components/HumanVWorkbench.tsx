@@ -134,6 +134,7 @@ export function HumanVWorkbench({ onScoreGenerated }: HumanVWorkbenchProps) {
   const {
     present: cleanedDoc,
     set: setDocument,
+    dispatch: dispatchDocument,
     reset: resetDocument,
     undo: undoDocument,
     redo: redoDocument,
@@ -499,13 +500,17 @@ export function HumanVWorkbench({ onScoreGenerated }: HumanVWorkbenchProps) {
   const deleteSelectedNotes = useCallback(() => {
     if (!cleanedDoc || selectedIds.length === 0) return;
     const selected = new Set(selectedIds);
-    setDocument((prev) => {
-      if (!prev) return prev;
-      return { ...prev, notes: prev.notes.filter((note) => !selected.has(note.id)) };
+    dispatchDocument({
+      label: `删除 ${selected.size} 个音符`,
+      source: 'user',
+      apply: (prev) => {
+        if (!prev) return prev;
+        return { ...prev, notes: prev.notes.filter((note) => !selected.has(note.id)) };
+      },
     });
     setSelectedIds([]);
     setDirty(true);
-  }, [cleanedDoc, setDocument, selectedIds]);
+  }, [cleanedDoc, dispatchDocument, selectedIds]);
 
   const transformSelectedNotes = useCallback((
     transform: (note: MidiNote) => MidiNote,
@@ -899,7 +904,11 @@ export function HumanVWorkbench({ onScoreGenerated }: HumanVWorkbenchProps) {
 
   const handleApplyAiMidi = useCallback((mode: 'replace' | 'append') => {
     if (!aiMidiPlan) return;
-    setDocument((prev) => mergeGeneratedMidi(prev, aiMidiPlan, mode));
+    dispatchDocument({
+      label: mode === 'append' ? 'AI 追加 MIDI' : 'AI 替换 MIDI',
+      source: 'ai',
+      apply: (prev) => mergeGeneratedMidi(prev, aiMidiPlan, mode),
+    });
     setDirty(true);
     setSelectedIds([]);
     setPlayheadSec(0);
@@ -914,7 +923,7 @@ export function HumanVWorkbench({ onScoreGenerated }: HumanVWorkbenchProps) {
         ? `已把 AI MIDI 追加到工作台：${aiMidiPlan.notes.length} 个音符`
         : `已用 AI MIDI 替换工作台：${aiMidiPlan.notes.length} 个音符`,
     );
-  }, [aiMidiPlan, getEngine, setDocument]);
+  }, [aiMidiPlan, dispatchDocument, getEngine]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
