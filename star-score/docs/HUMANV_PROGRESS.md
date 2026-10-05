@@ -191,11 +191,46 @@ Planned:
 - Support HubertFA or a compatible local alignment model.
 - Merge phoneme/word boundaries with GAME note boundaries.
 - Allow multiple syllables to bind to one MIDI phrase.
+- DONE (2026-10-02): greedy nearest-note mapping replaced by boundary-aware monotonic DP alignment (`src/core/ai/alignment.ts`); tested with 5 cases.
+
+## Clean-room architecture backlog
+
+These design directions come from reading public architecture discussions (ADR-style rationale), NOT from copying code. We reimplement each idea in our own React/TS + Python stack. Nothing below imports or ports external source.
+
+### B1 - Unified command layer (EditBatch)
+
+Status: `NEXT`
+
+Planned:
+
+- Converge all MIDI-project mutations (UI buttons, REST calls, future AI agent tools) into one validated transaction object.
+- Every edit is versioned, diffable, and undoable through the same path; no side doors for agents.
+- Reuse the existing undo/redo and command palette as the seam; do not fork parallel mutation paths.
+
+### B2 - Staged transcription quick-lane
+
+Status: `NEXT`
+
+Planned:
+
+- Break GAME transcription into visible stages: denoise -> loudness normalize -> GAME notes -> quantize -> scale/key snap.
+- Each stage keeps its artifacts and offers a preview + "adopt" button, instead of one black-box result.
+- Reuse the GAME `game_onnx.py` backend; stages are thin wrappers around it.
+
+### B3 - Named version snapshots
+
+Status: `NEXT`
+
+Planned:
+
+- Allow the user to snapshot the current `.vproj` with a name.
+- AI-assisted edits can be rolled back to a named snapshot (complements the existing undo stack).
+- Keep snapshots inside the project folder, not a global git repo.
 
 ## Later Milestones
 
 1. `M4`: USTX / VSQX / MusicXML export.
-2. `M5`: optional AI assistant provider.
+2. `M5`: optional AI assistant provider (builds on B1 command layer).
 3. `M6`: desktop packaging and plugin sandbox.
 
 ## Decision Log
@@ -222,3 +257,5 @@ Planned:
 | 2026-09-29 | UI | Added laboratory-console shell, HumanV rail layout, and motion system |
 | 2026-09-30 | UI | Reskinned HumanV as dark instrument console: scoped dark tokens to `.humanv`, replaced hardcoded blue/amber/gray in `humanv.css` with `--lab-*` tokens, dark glass buttons and form controls, staggered entrance motion, hover glow; updated `UI_DESIGN.md` |
 | 2026-09-30 | UI | Unified whole app to dark lab theme: flipped `--color-*` tokens in global.css from warm-paper to dark teal, kept the score sheet as a light paper card so notation stays readable, fixed view-switch active button (was white-on-transparent = invisible), renamed tab "人力V工作台" → "人声合成", kicker → "VOCAL / SYNTHESIS LAB" |
+| 2026-10-02 | AI | Replaced greedy nearest-note lyric mapping with boundary-aware monotonic DP alignment (`src/core/ai/alignment.ts`); 5 test cases; fixes one M3b sub-item |
+| 2026-10-05 | Architecture | Added clean-room backlog (B1 unified command layer / B2 staged transcription quick-lane / B3 named version snapshots) after reading public ADR-style rationale; no external code ported |
